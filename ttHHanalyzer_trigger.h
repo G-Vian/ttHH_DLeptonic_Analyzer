@@ -37,9 +37,9 @@ map<std::string, float> cut {
     , {"MET", 40} // MET higher than
     , {"nbJets", 3} //nBjets higher than
     , {"jetPt", 30} // jet pT higher than
-    , {"leadElePt", 25} // leadElectron pT higher than
+    , {"leadElePt", 30} // leadElectron pT higher than
     , {"leadMuonPt", 25} // leadMuon pT higher than
-    , {"subLeadElePt", 15} // subLeadElectron pT higher than
+    , {"subLeadElePt", 25} // subLeadElectron pT higher than
     , {"subLeadMuonPt", 15} // subLeadMuon pT higher than
     // , {"vetoLepPt", 15} // lepton pT higher than
     , {"boostedJetPt", 10} // boostedJet pT higher than
