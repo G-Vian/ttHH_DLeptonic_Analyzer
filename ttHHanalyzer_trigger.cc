@@ -269,7 +269,7 @@ void ttHHanalyzer::createObjects(event * thisEvent, sysName sysType, bool up){
     if(!thereIsALeadLepton){
 	for(int i = 0; i < ele.size(); i++){
 	    if(fabs(ele[i].deltaEtaSC + ele[i].eta) < 1.4442 || fabs(ele[i].deltaEtaSC + ele[i].eta) > 1.5660){  //Electrons tracked neither in the barrel nor in the endcap are discarded.
-		if(fabs(ele[i].eta) < cut["eleEta"] && ele[i].tightId == true && ele[i].pfRelIso04_all  < cut["eleIso"]){ 
+		if(fabs(ele[i].eta) < cut["eleEta"] && ele[i].tightId == true && ele[i].pfRelIso03_all  < cut["eleIso"]){ 
 		    if(ele[i].pt > cut["leadElePt"]){
 			thereIsALeadLepton = true;
 			break;
