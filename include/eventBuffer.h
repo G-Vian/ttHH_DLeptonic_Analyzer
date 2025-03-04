@@ -67,6 +67,7 @@ struct eventBuffer
   std::vector<float>	Electron_mvaFall17V2Iso;
   std::vector<bool>	Electron_mvaFall17V2Iso_WP80;
   std::vector<bool>	Electron_mvaFall17V2Iso_WP90;
+  std::vector<bool>	Electron_tightId;
   std::vector<bool>	Electron_mvaFall17V2Iso_WPL;
   std::vector<float>	Electron_mvaFall17V2noIso;
   std::vector<bool>	Electron_mvaFall17V2noIso_WP80;
@@ -1153,12 +1154,13 @@ struct eventBuffer
     bool	mvaFall17V2Iso_WP80;
     bool	mvaFall17V2Iso_WP90;
     bool	mvaFall17V2Iso_WPL;
+    bool        tightId;
     float	mvaFall17V2noIso;
     bool	mvaFall17V2noIso_WP80;
     bool	mvaFall17V2noIso_WP90;
     bool	mvaFall17V2noIso_WPL;
     float	mvaTTH;
-    int	pdgId;
+    int	        pdgId;
     float	pfRelIso03_all;
     float	pfRelIso03_chg;
     float	phi;
@@ -1215,6 +1217,7 @@ struct eventBuffer
       sprintf(r, "  %-32s: %f\n", "mvaFall17V2Iso", ( double)mvaFall17V2Iso); os << r;
       sprintf(r, "  %-32s: %f\n", "mvaFall17V2Iso_WP80", ( double)mvaFall17V2Iso_WP80); os << r;
       sprintf(r, "  %-32s: %f\n", "mvaFall17V2Iso_WP90", ( double)mvaFall17V2Iso_WP90); os << r;
+      sprintf(r, "  %-32s: %f\n", "tightId", ( double)tightId); os << r;
       sprintf(r, "  %-32s: %f\n", "mvaFall17V2Iso_WPL", ( double)mvaFall17V2Iso_WPL); os << r;
       sprintf(r, "  %-32s: %f\n", "mvaFall17V2noIso", ( double)mvaFall17V2noIso); os << r;
       sprintf(r, "  %-32s: %f\n", "mvaFall17V2noIso_WP80", ( double)mvaFall17V2noIso_WP80); os << r;
@@ -2248,6 +2251,7 @@ struct eventBuffer
         Electron[i].mvaFall17V2Iso	= Electron_mvaFall17V2Iso[i];
         Electron[i].mvaFall17V2Iso_WP80	= (bool)Electron_mvaFall17V2Iso_WP80[i];
         Electron[i].mvaFall17V2Iso_WP90	= (bool)Electron_mvaFall17V2Iso_WP90[i];
+        Electron[i].tightId	= (bool)Electron_tightId[i];
         Electron[i].mvaFall17V2Iso_WPL	= (bool)Electron_mvaFall17V2Iso_WPL[i];
         Electron[i].mvaFall17V2noIso	= Electron_mvaFall17V2noIso[i];
         Electron[i].mvaFall17V2noIso_WP80	= (bool)Electron_mvaFall17V2noIso_WP80[i];
@@ -2908,6 +2912,7 @@ struct eventBuffer
             Electron_mvaFall17V2Iso[i]	= Electron_mvaFall17V2Iso[j];
             Electron_mvaFall17V2Iso_WP80[i]	= Electron_mvaFall17V2Iso_WP80[j];
             Electron_mvaFall17V2Iso_WP90[i]	= Electron_mvaFall17V2Iso_WP90[j];
+	    Electron_tightId[i]	= Electron_Electron_tightId[j];
             Electron_mvaFall17V2Iso_WPL[i]	= Electron_mvaFall17V2Iso_WPL[j];
             Electron_mvaFall17V2noIso[i]	= Electron_mvaFall17V2noIso[j];
             Electron_mvaFall17V2noIso_WP80[i]	= Electron_mvaFall17V2noIso_WP80[j];
@@ -3665,6 +3670,7 @@ struct eventBuffer
     choose["Electron_mvaFall17V2Iso"]	= DEFAULT;
     choose["Electron_mvaFall17V2Iso_WP80"]	= DEFAULT;
     choose["Electron_mvaFall17V2Iso_WP90"]	= DEFAULT;
+    choose["Electron_tightId"]			= DEFAULT;
     choose["Electron_mvaFall17V2Iso_WPL"]	= DEFAULT;
     choose["Electron_mvaFall17V2noIso"]	= DEFAULT;
     choose["Electron_mvaFall17V2noIso_WP80"]	= DEFAULT;
@@ -4802,6 +4808,9 @@ struct eventBuffer
     if ( choose["Electron_mvaFall17V2Iso_WP90"] )
       input->select("Events/Electron_mvaFall17V2Iso_WP90",
                      Electron_mvaFall17V2Iso_WP90);
+    if ( choose["Electron_Electron_tightId"] )
+      input->select("Events/Electron_Electron_tightId",
+                     Electron_Electron_tightId);
     if ( choose["Electron_mvaFall17V2Iso_WPL"] )
       input->select("Events/Electron_mvaFall17V2Iso_WPL",
                      Electron_mvaFall17V2Iso_WPL);
@@ -7257,6 +7266,8 @@ struct eventBuffer
                  Electron_mvaFall17V2Iso_WP80);
     output->add("Events/Electron_mvaFall17V2Iso_WP90[nElectron]",
                  Electron_mvaFall17V2Iso_WP90);
+    output->add("Events/Electron_tightId[nElectron]",
+                 Electron_tightId);
     output->add("Events/Electron_mvaFall17V2Iso_WPL[nElectron]",
                  Electron_mvaFall17V2Iso_WPL);
     output->add("Events/Electron_mvaFall17V2noIso[nElectron]",
@@ -8683,6 +8694,7 @@ struct eventBuffer
     Electron_mvaFall17V2Iso	= std::vector<float>(25,0);
     Electron_mvaFall17V2Iso_WP80	= std::vector<bool>(25,0);
     Electron_mvaFall17V2Iso_WP90	= std::vector<bool>(25,0);
+    Electron_tightId	= std::vector<bool>(25,0); 
     Electron_mvaFall17V2Iso_WPL	= std::vector<bool>(25,0);
     Electron_mvaFall17V2noIso	= std::vector<float>(25,0);
     Electron_mvaFall17V2noIso_WP80	= std::vector<bool>(25,0);
