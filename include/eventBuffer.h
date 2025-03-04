@@ -2912,7 +2912,7 @@ struct eventBuffer
             Electron_mvaFall17V2Iso[i]	= Electron_mvaFall17V2Iso[j];
             Electron_mvaFall17V2Iso_WP80[i]	= Electron_mvaFall17V2Iso_WP80[j];
             Electron_mvaFall17V2Iso_WP90[i]	= Electron_mvaFall17V2Iso_WP90[j];
-	    Electron_tightId[i]	= Electron_Electron_tightId[j];
+	    Electron_tightId[i]	= Electron_tightId[j];
             Electron_mvaFall17V2Iso_WPL[i]	= Electron_mvaFall17V2Iso_WPL[j];
             Electron_mvaFall17V2noIso[i]	= Electron_mvaFall17V2noIso[j];
             Electron_mvaFall17V2noIso_WP80[i]	= Electron_mvaFall17V2noIso_WP80[j];
@@ -4808,9 +4808,9 @@ struct eventBuffer
     if ( choose["Electron_mvaFall17V2Iso_WP90"] )
       input->select("Events/Electron_mvaFall17V2Iso_WP90",
                      Electron_mvaFall17V2Iso_WP90);
-    if ( choose["Electron_Electron_tightId"] )
-      input->select("Events/Electron_Electron_tightId",
-                     Electron_Electron_tightId);
+    if ( choose["Electron_tightId"] )
+      input->select("Events/Electron_tightId",
+                     Electron_tightId);
     if ( choose["Electron_mvaFall17V2Iso_WPL"] )
       input->select("Events/Electron_mvaFall17V2Iso_WPL",
                      Electron_mvaFall17V2Iso_WPL);
