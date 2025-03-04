@@ -269,7 +269,7 @@ void ttHHanalyzer::createObjects(event * thisEvent, sysName sysType, bool up){
     if(!thereIsALeadLepton){
 	for(int i = 0; i < ele.size(); i++){
 	    if(fabs(ele[i].deltaEtaSC + ele[i].eta) < 1.4442 || fabs(ele[i].deltaEtaSC + ele[i].eta) > 1.5660){  //Electrons tracked neither in the barrel nor in the endcap are discarded.
-		if(fabs(ele[i].eta) < cut["eleEta"] && ele[i].cutBased == 3 && ele[i].pfRelIso03_all  < cut["eleIso"]){ 
+		if(fabs(ele[i].eta) < cut["eleEta"] && ele[i].cutBased == 2 && ele[i].pfRelIso03_all  < cut["eleIso"]){ 
 		    if(ele[i].pt > cut["leadElePt"]){
 			thereIsALeadLepton = true;
 			break;
@@ -296,7 +296,7 @@ void ttHHanalyzer::createObjects(event * thisEvent, sysName sysType, bool up){
 	}
 	for(int i = 0; i < ele.size(); i++){
 	    if(fabs(ele[i].deltaEtaSC + ele[i].eta) < 1.4442 || fabs(ele[i].deltaEtaSC + ele[i].eta) > 1.5660){  //Electrons tracked neither in the barrel nor in the endcap are discarded.
-		if(fabs(ele[i].eta) < cut["eleEta"] && ele[i].cutBased == 3 && ele[i].pfRelIso03_all  < cut["eleIso"]){ 
+		if(fabs(ele[i].eta) < cut["eleEta"] && ele[i].cutBased == 2 && ele[i].pfRelIso03_all  < cut["eleIso"]){ 
 		    if(ele[i].pt > cut["subLeadElePt"]){
 			currentEle = new objectLep(ele[i].pt, ele[i].eta, ele[i].phi, 0.);	 
 			currentEle->charge = ele[i].charge;
@@ -508,48 +508,56 @@ bool ttHHanalyzer::selectObjects(event *thisEvent){
     	}
     }*/
 
-// Check if there are exactly two electrons and no muons
-if (thisEvent->getSelElectrons()->size() == 2 && thisEvent->getSelMuons()->size() == 0) {
-    // Case 1: Two electrons, no muons
-    if (thisEvent->getSelElectrons()->at(0)->getp4()->Pt() < cut["leadElePt"] ||
-        fabs(thisEvent->getSelElectrons()->at(0)->getp4()->Eta()) > cut["eleEta"] ||
-        thisEvent->getSelElectrons()->at(1)->getp4()->Pt() < cut["subLeadElePt"] ||
-        fabs(thisEvent->getSelElectrons()->at(1)->getp4()->Eta()) > cut["eleEta"]) {
-        return false;
-    }
-} 
-// Check if there are exactly two muons and no electrons
-else if (thisEvent->getSelElectrons()->size() == 0 && thisEvent->getSelMuons()->size() == 2) {
-    // Case 2: Two muons, no electrons
-    if (thisEvent->getSelMuons()->at(0)->getp4()->Pt() < cut["leadMuonPt"] ||
-        fabs(thisEvent->getSelMuons()->at(0)->getp4()->Eta()) > cut["muonEta"] ||
-        thisEvent->getSelMuons()->at(1)->getp4()->Pt() < cut["subLeadMuonPt"] ||
-        fabs(thisEvent->getSelMuons()->at(1)->getp4()->Eta()) > cut["muonEta"]) {
-        return false;
-    }
-} 
-// Check if there is one electron and one muon
-else if (thisEvent->getSelElectrons()->size() == 1 && thisEvent->getSelMuons()->size() == 1) {
-    // Case 3: One electron and one muon
-    auto ele = thisEvent->getSelElectrons()->at(0);
-    auto mu = thisEvent->getSelMuons()->at(0);
-    
-    // Determine which lepton has the highest transverse momentum (pT)
-    if (ele->getp4()->Pt() > mu->getp4()->Pt()) {
-        // Electron is leading
-        if (ele->getp4()->Pt() < cut["leadElePt"] || fabs(ele->getp4()->Eta()) > cut["eleEta"] ||
-            mu->getp4()->Pt() < cut["subLeadMuonPt"] || fabs(mu->getp4()->Eta()) > cut["muonEta"]) {
-            return false;
-        }
-    } else {
-        // Muon is leading
-        if (mu->getp4()->Pt() < cut["leadMuonPt"] || fabs(mu->getp4()->Eta()) > cut["muonEta"] ||
-            ele->getp4()->Pt() < cut["subLeadElePt"] || fabs(ele->getp4()->Eta()) > cut["eleEta"]) {
-            return false;
-        }
-    }
-}
-
+	int count_elec = 0;
+	int count_muon = 0;
+	
+	// Check if there are exactly two electrons and no muons
+	if (thisEvent->getSelElectrons()->size() == 2 && thisEvent->getSelMuons()->size() == 0) {
+	    // Case 1: Two electrons, no muons
+	    if (thisEvent->getSelElectrons()->at(0)->getp4()->Pt() < cut["leadElePt"] ||
+	        fabs(thisEvent->getSelElectrons()->at(0)->getp4()->Eta()) > cut["eleEta"] ||
+	        thisEvent->getSelElectrons()->at(1)->getp4()->Pt() < cut["subLeadElePt"] ||
+	        fabs(thisEvent->getSelElectrons()->at(1)->getp4()->Eta()) > cut["eleEta"]) {
+	        return false;
+	    }
+            cutflow["count_ele"]+=2;
+	} 
+	// Check if there are exactly two muons and no electrons
+	else if (thisEvent->getSelElectrons()->size() == 0 && thisEvent->getSelMuons()->size() == 2) {
+	    // Case 2: Two muons, no electrons
+	    if (thisEvent->getSelMuons()->at(0)->getp4()->Pt() < cut["leadMuonPt"] ||
+	        fabs(thisEvent->getSelMuons()->at(0)->getp4()->Eta()) > cut["muonEta"] ||
+	        thisEvent->getSelMuons()->at(1)->getp4()->Pt() < cut["subLeadMuonPt"] ||
+	        fabs(thisEvent->getSelMuons()->at(1)->getp4()->Eta()) > cut["muonEta"]) {
+	        return false;
+	    }
+	//    count_muon += 2;
+            cutflow["count_muon"]+=2;
+	} 
+	// Check if there is one electron and one muon
+	else if (thisEvent->getSelElectrons()->size() == 1 && thisEvent->getSelMuons()->size() == 1) {
+	    // Case 3: One electron and one muon
+	    auto ele = thisEvent->getSelElectrons()->at(0);
+	    auto mu = thisEvent->getSelMuons()->at(0);
+	    
+	    // Determine which lepton has the highest transverse momentum (pT)
+	    if (ele->getp4()->Pt() > mu->getp4()->Pt()) {
+	        // Electron is leading
+	        if (ele->getp4()->Pt() < cut["leadElePt"] || fabs(ele->getp4()->Eta()) > cut["eleEta"] ||
+	            mu->getp4()->Pt() < cut["subLeadMuonPt"] || fabs(mu->getp4()->Eta()) > cut["muonEta"]) {
+	            return false;
+	        }
+	    } else {
+	        // Muon is leading
+	        if (mu->getp4()->Pt() < cut["leadMuonPt"] || fabs(mu->getp4()->Eta()) > cut["muonEta"] ||
+	            ele->getp4()->Pt() < cut["subLeadElePt"] || fabs(ele->getp4()->Eta()) > cut["eleEta"]) {
+	            return false;
+	        }
+	    }
+            cutflow["count_ele"]+=1;
+	    cutflow["count_muon"]+=1;
+	//    count_muon++;
+	}
 
 	
 //////////////////////////////	
