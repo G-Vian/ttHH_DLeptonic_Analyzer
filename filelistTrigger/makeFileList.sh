@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # SingleMuon datasets
-dasgoclient --query="file dataset=/SingleMuon/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_SingleMuon_B.txt
-dasgoclient --query="file dataset=/SingleMuon/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_SingleMuon_C.txt
-dasgoclient --query="file dataset=/SingleMuon/Run2017D-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_SingleMuon_D.txt
-dasgoclient --query="file dataset=/SingleMuon/Run2017E-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_SingleMuon_E.txt
-dasgoclient --query="file dataset=/SingleMuon/Run2017F-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_SingleMuon_F.txt
+dasgoclient --query="/TTHHTo4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v2/NANOAODSIM" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_TTHH17.txt
+dasgoclient --query="file dataset=/TT4b_TuneCP5_13TeV_madgraph_pythia8/RunIIFall17NanoAODv7-PU2017_12Apr2018_Nano02Apr2020_102X_mc2017_realistic_v8-v1/NANOAODSIM" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_TT4b17.txt
+dasgoclient --query="file dataset=/TTZHTo4b_TuneCP5_13TeV-madgraph-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9_ext1-v1/NANOAODSIM" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_TTZH17.txt
+dasgoclient --query="file dataset=/file dataset=/TTZZTo4b_5f_LO_TuneCP5_13TeV_madgraph_pythia8/RunIIFall17NanoAODv4-PU2017_12Apr2018_Nano14Dec2018_102X_mc2017_realistic_v6-v1/NANOAODSIM" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_TTZZ17.txt
+
 
