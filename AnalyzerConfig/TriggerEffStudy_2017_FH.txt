@@ -1,12 +1,13 @@
 
+
 # <filelist file name> <output-dir name> <weight> <year> <MC or Data> <Sample name>
 # e.g.) filelist_JetHT_B.txt JetHT_B 1.0 2017 Data JetHT_B
 
 # This is for the Analyzer Configuration of ttHH Hadronic Trigger Study
 
-filelist_ttJets.txt ttJets 3.441071667 2017 MC ttJets
-filelist_SingleMuon_B.txt SingleMuon_B 1.0 2017 Data SingleMuon_B
-filelist_SingleMuon_C.txt SingleMuon_C 1.0 2017 Data SingleMuon_C
-filelist_SingleMuon_D.txt SingleMuon_D 1.0 2017 Data SingleMuon_D
-filelist_SingleMuon_E.txt SingleMuon_E 1.0 2017 Data SingleMuon_E
-filelist_SingleMuon_F.txt SingleMuon_F 1.0 2017 Data SingleMuon_F
+filelist_TTHH17.txt ttHH_17.root 0.00000109817 2017 MC ttHH_17
+filelist_TT4b17.txt tt4b_17.root 0.000220831 2017 MC tt4b_17
+filelist_TTZH17.txt TTZH_17.root 0.0000012 2017 MC ttZH_17
+filelist_TTZZ17.txt TTZZ_17.root 0.00000000023962 2017 MC TTZZ_17
+filelist_TT_DL17.txt TT_DL17.root 0.001228646 2017 TT_DL17
+
