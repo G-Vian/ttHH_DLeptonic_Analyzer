@@ -1,3 +1,4 @@
+// plot with no mean value
 #include <TFile.h>
 #include <TH1.h>
 #include <THStack.h>
