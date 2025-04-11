@@ -1,4 +1,3 @@
-// plot with no mean value
 #include <TFile.h>
 #include <TH1.h>
 #include <THStack.h>
@@ -70,7 +69,7 @@ void setLatexSetting(TLatex& histoLatex, const string& histo_title) {
     histoLatex.DrawLatex(0.13, 0.92, title.c_str());
 }
 
-TGraphAsymmErrors* CreateRatioPlot(TH1* signal, THStack* background, const HistogramSetting& setting, double maxRatioLimit = 5) {
+TGraphAsymmErrors* CreateRatioPlot(TH1* signal, THStack* background, const HistogramSetting& setting, double maxRatioLimit = 0.01) {
     if (!signal || !background) {
         cerr << "Error: Signal or background is null while creating the ratio plot." << endl;
         return nullptr;
@@ -163,7 +162,7 @@ TGraphAsymmErrors* CreateRatioPlot(TH1* signal, THStack* background, const Histo
     return grRatio;
 }
 
-void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, const HistogramSetting& setting, const string& histName) {
+void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, const HistogramSetting& setting, const string& histName, int processesPerLine = 2) {
     if (histograms.empty()) {
         cerr << "Error: No histograms provided to draw." << endl;
         return;
@@ -209,8 +208,6 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
     TPad* upperPad = new TPad("upperPad", "Upper Pad", 0.0, 0.30, 1.0, 1.0);
     TPad* lowerPad = new TPad("lowerPad", "Lower Pad", 0.0, 0.0, 1.0, 0.30);
 
-    // Increase the top margin to create more space for legends
-   // upperPad->SetTopMargin(0.15); // Increase top margin to 10%
     upperPad->SetRightMargin(0.05); // Reduced right margin
     lowerPad->SetRightMargin(0.05); // Reduced right margin
 
@@ -252,19 +249,23 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
     TLatex latex;
     setLatexSetting(latex, setting.title);
 
-// Add colored boxes with the color and name of each process in the top-right corner
+// Add colored squares with the color and name of each process in the top-right corner
 double xText = 0.85; // Horizontal position of the text
 double yText = 0.85; // Initial vertical position of the text (higher up)
 double yStep = 0.05; // Spacing between text lines (increased to create more space)
+double xStep = 0.15; // Horizontal spacing between processes in the same line
+
+int processCount = 0; // Counter to track the number of processes in the current line
 
 for (const auto& histPair : histograms) {
     TH1* hist = histPair.first;
     if (!hist) continue;
 
-    // Create a TPaveText for the colored box
-    TPaveText* box = new TPaveText(xText - 0.06, yText - 0.01, xText - 0.02, yText + 0.01, "NDC");
+    // Create a TPaveText for the colored square
+    double boxSize = 0.02; // Size of the square (height and width)
+    TPaveText* box = new TPaveText(xText - 0.06, yText - boxSize / 2, xText - 0.06 + boxSize, yText + boxSize / 2, "NDC");
     box->SetFillColor(histPair.second.color); // Use the color defined in ProcessInfo
-    box->SetLineColor(histPair.second.color); // Set the border color of the box
+    box->SetLineColor(kBlack); // Set the border color to black
     box->SetBorderSize(1); // Border thickness
     box->Draw();
 
@@ -282,7 +283,13 @@ for (const auto& histPair : histograms) {
     latex.SetTextSize(0.025); // Font size
     latex.DrawLatex(xText, yText, histPair.second.legendName.c_str());
 
-    yText -= yStep; // Move to the next line (with more space)
+    processCount++;
+    if (processCount % processesPerLine == 0) { // Start a new line after every N processes
+        yText -= yStep; // Move to the next line
+        xText = 0.85; // Reset horizontal position
+    } else {
+        xText -= xStep; // Move horizontally for the next process in the same line
+    }
 }
     // Draw lower pad
     lowerPad->cd();
@@ -308,7 +315,6 @@ for (const auto& histPair : histograms) {
     delete stack;
     delete canvas;
 }
-
 
 void Iteration_Directories_And_Histograms(const unordered_map<string, ProcessInfo>& processes, const unordered_map<string, vector<HistogramSetting>>& histogramSettings) {
     for (const auto& histSettingPair : histogramSettings) {
@@ -381,8 +387,8 @@ void Iteration_Directories_And_Histograms(const unordered_map<string, ProcessInf
 
 int Ploter3() {
     unordered_map<string, ProcessInfo> processes = {
-  //        {"TT_DL", {"TT_DL.root", false, kMagenta, "TT_DL"}},
-    //     {"TT4b", {"TT4b.root", true, kGreen, "TT4b"}},
+  {"TT_DL", {"TTHTobb.root", false, kMagenta, "TTH"}},
+         {"TT4b", {"TT4b.root", false, kGreen, "TT4b"}},
          {"TTZH", {"TTZH.root", false, kBlue, "TTZH"}},
         {"TTZZ", {"TTZZ.root", false, kRed, "TTZZ"}},
         {"ttHH", {"ttHH.root", true, kBlack, "ttHH"}},
@@ -436,4 +442,5 @@ int Ploter3() {
     return 0;
 }
 
-// to run use root -l -b -q Ploter3.cpp
+// to run use 
+// root -l -b -q Ploter3.cpp

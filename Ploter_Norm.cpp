@@ -1,4 +1,3 @@
-//normalized plots
 #include <TFile.h>
 #include <TH1.h>
 #include <THStack.h>
@@ -24,7 +23,7 @@ using namespace std;
 struct ProcessInfo {
     string path;
     bool isSignal;
-    int color; // Line color of the histogram
+    int color; // stacked histogram color
     string legendName;
 };
 
@@ -35,8 +34,8 @@ struct HistogramSetting {
     string saveName;
 };
 
-const string plotExtension = ".png"; // Output file extension
-const string savePath = "plotOutput_normalized_no_filling";
+const string plotExtension = ".png"; // save file extension
+const string savePath = "plot_Norm_Output";
 
 // Function to create the directory if it does not exist
 void CreateDirectoryIfNotExists(const string& path) {
@@ -62,7 +61,7 @@ void setLatexSetting(TLatex& histoLatex, const string& histo_title) {
 
     histoLatex.SetTextSize(0.04);
     histoLatex.SetTextAlign(31); // Align to the right
-    histoLatex.DrawLatex(0.9, 0.945, "2023 year, 9.45 fb^{-1} [13.6 TeV]");
+    histoLatex.DrawLatex(0.9, 0.945, "2023 year, 18 fb^{-1} [13.6 TeV]");
 
     histoLatex.SetTextSize(0.04);
     histoLatex.SetTextAlign(11);
@@ -70,26 +69,42 @@ void setLatexSetting(TLatex& histoLatex, const string& histo_title) {
     histoLatex.DrawLatex(0.13, 0.92, title.c_str());
 }
 
-TGraphAsymmErrors* CreateRatioPlot(TH1* signal, TH1* backgroundSum, const HistogramSetting& setting, double maxRatioLimit = 5) {
-    if (!signal || !backgroundSum) {
+TGraphAsymmErrors* CreateRatioPlot(TH1* signal, THStack* background, const HistogramSetting& setting, double maxRatioLimit = 0.01) {
+    if (!signal || !background) {
         cerr << "Error: Signal or background is null while creating the ratio plot." << endl;
         return nullptr;
     }
 
-    double xAxisRange_low = signal->GetXaxis()->GetXmin();
-    double xAxisRange_high = signal->GetXaxis()->GetXmax();
+    auto First_Stacked_histo = (TH1*)background->GetHists()->First();
+    if (!First_Stacked_histo) {
+        cerr << "Error: No histogram found in the THStack." << endl;
+        return nullptr;
+    }
+
+    double xAxisRange_low = First_Stacked_histo->GetXaxis()->GetXmin();
+    double xAxisRange_high = First_Stacked_histo->GetXaxis()->GetXmax();
 
     double maxVal = -std::numeric_limits<double>::max();
     double minVal = std::numeric_limits<double>::max();
 
     TGraphAsymmErrors* grRatio = new TGraphAsymmErrors();
 
-    // Calculate the ratio and its errors
+    // Calculate sum of background THStack
+    TH1D* sumHist = static_cast<TH1D*>(signal->Clone("sumHist"));
+    sumHist->Reset();
+    TList* histList = background->GetHists();
+    TIter next(histList);
+    TH1D* hist;
+    while ((hist = static_cast<TH1D*>(next()))) {
+        sumHist->Add(hist);
+    }
+
+    // ratio histogram and its error
     for (int i = 1; i <= signal->GetNbinsX(); ++i) {
-        double S = signal->GetBinContent(i);
-        double B = backgroundSum->GetBinContent(i);
+        double S = signal->GetBinContent(i); // Use original signal value
+        double B = sumHist->GetBinContent(i); // Use original background value
         double sigma_S = signal->GetBinError(i);
-        double sigma_B = backgroundSum->GetBinError(i);
+        double sigma_B = sumHist->GetBinError(i);
 
         double x = signal->GetBinCenter(i);
 
@@ -147,15 +162,6 @@ TGraphAsymmErrors* CreateRatioPlot(TH1* signal, TH1* backgroundSum, const Histog
     return grRatio;
 }
 
-void NormalizeHistogram(TH1* hist) {
-    if (hist) {
-        double integral = hist->Integral();
-        if (integral > 0) {
-            hist->Scale(1.0 / integral);
-        }
-    }
-}
-
 void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, const HistogramSetting& setting, const string& histName) {
     if (histograms.empty()) {
         cerr << "Error: No histograms provided to draw." << endl;
@@ -169,12 +175,13 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
     }
 
     TH1* signalHist = nullptr;
-    TH1* backgroundSum = nullptr; // Sum of background histograms
+    TH1* signalHistOriginal = nullptr; // Keep original signal histogram for ratio calculation
     double maxY = 0;
 
-    // Add histograms to the stack
+    // Clone histograms for normalization (only for visualization)
+    vector<pair<TH1*, ProcessInfo>> normalizedHistograms;
     for (const auto& histPair : histograms) {
-        TH1* hist = histPair.first;
+        TH1* hist = static_cast<TH1*>(histPair.first->Clone());
         if (!hist) {
             cerr << "Error: Null histogram found for process " << histPair.second.legendName << endl;
             continue;
@@ -182,36 +189,23 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
 
         if (histPair.second.isSignal) {
             signalHist = hist;
+            signalHistOriginal = histPair.first; // Keep original signal histogram
         } else {
-            hist->SetLineColor(histPair.second.color); // Only set the line color
             hist->SetFillStyle(0); // No fill
+            hist->SetLineColor(histPair.second.color);
             stack->Add(hist);
-
-            // Sum of background histograms
-            if (!backgroundSum) {
-                backgroundSum = static_cast<TH1*>(hist->Clone("backgroundSum"));
-                backgroundSum->Reset();
-            }
-            backgroundSum->Add(hist);
-
             cout << "Background histogram added to stack: " << histPair.second.legendName << endl;
         }
 
+        // Normalize the cloned histogram for visualization
+        hist->Scale(1.0 / hist->Integral());
         maxY = max(maxY, hist->GetMaximum());
     }
 
-    if (!signalHist || !backgroundSum) {
-        cerr << "Error: No signal or background histogram found." << endl;
+    if (!signalHist || !signalHistOriginal) {
+        cerr << "Error: No signal histogram found." << endl;
         delete stack;
         return;
-    }
-
-    // Calculate the ratio R before normalizing
-    auto* grRatio = CreateRatioPlot(signalHist, backgroundSum, setting);
-
-    // Normalize the histograms
-    for (const auto& histPair : histograms) {
-        NormalizeHistogram(histPair.first);
     }
 
     // Create canvas and pads
@@ -219,8 +213,9 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
     TPad* upperPad = new TPad("upperPad", "Upper Pad", 0.0, 0.30, 1.0, 1.0);
     TPad* lowerPad = new TPad("lowerPad", "Lower Pad", 0.0, 0.0, 1.0, 0.30);
 
-    upperPad->SetRightMargin(0.05); // Reduced right margin
-    lowerPad->SetRightMargin(0.05); // Reduced right margin
+    // Increase the right margin to create more space
+    upperPad->SetRightMargin(0.20); // Increased right margin to 20%
+    lowerPad->SetRightMargin(0.20); // Increased right margin to 20%
 
     upperPad->Draw();
     lowerPad->Draw();
@@ -237,7 +232,7 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
     stack->Draw("HIST");
     stack->GetXaxis()->SetTitle(setting.xAxisTitle.c_str());
     stack->GetYaxis()->SetTitle("#bf{Normalized Events / bin}");
-    stack->SetMaximum(1); // Increase the maximum limit to avoid overlap
+    stack->SetMaximum(maxY * 1.2);
     stack->SetMinimum(1e-6);
     stack->GetXaxis()->SetLabelSize(0);
 
@@ -260,20 +255,42 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
     TLatex latex;
     setLatexSetting(latex, setting.title);
 
-    // Add legends in the top-right corner
+    // Add colored squares with the color and name of each process in the top-right corner
     double xText = 0.85; // Horizontal position of the text
-    double yText = 0.85; // Initial vertical position of the text
-    double yStep = 0.05; // Spacing between text lines
+    double yText = 0.85; // Initial vertical position of the text (higher up)
+    double yStep = 0.05; // Spacing between text lines (increased to create more space)
+    double xStep = 0.15; // Horizontal spacing between processes in the same line
 
     for (const auto& histPair : histograms) {
         TH1* hist = histPair.first;
         if (!hist) continue;
 
-        // Add the process name
-        latex.SetTextColor(histPair.second.color); // Use the line color
-        latex.SetTextSize(0.025); // Font size
-        latex.DrawLatex(xText, yText, histPair.second.legendName.c_str());
+        double mean = hist->GetMean();
+        double stdDev = hist->GetStdDev();
 
+        // Format values to two decimal places
+        stringstream meanStream, stdDevStream;
+        meanStream << std::fixed << std::setprecision(2) << mean;
+        stdDevStream << std::fixed << std::setprecision(2) << stdDev;
+
+        // Create a TPaveText for the colored square
+        double boxSize = 0.02; // Size of the square (height and width)
+        TPaveText* box = new TPaveText(xText - 0.04, yText - boxSize / 2, xText - 0.04+ boxSize, yText + boxSize / 2, "NDC");
+        box->SetFillColor(histPair.second.color); // Use the color defined in ProcessInfo
+        box->SetLineColor(kBlack); // Set the border color to black
+        box->SetBorderSize(1); // Border thickness
+        box->Draw();
+
+        // First line: process name and mean value
+        string info1 = histPair.second.legendName + ": #mu = " + meanStream.str();
+        latex.SetTextColor(kBlack); // Text color is black for better readability
+        latex.SetTextSize(0.025); // Reduced font size to 0.025
+        latex.DrawLatex(xText, yText, info1.c_str());
+        yText -= yStep; // Move to the next line
+
+        // Second line: standard deviation
+        string info2 = "#sigma = " + stdDevStream.str();
+        latex.DrawLatex(xText, yText, info2.c_str());
         yText -= yStep; // Move to the next line
     }
 
@@ -282,6 +299,8 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
     lowerPad->SetGrid(1, 1);
     lowerPad->SetTickx(1);
 
+    // Use the original signal histogram for ratio calculation
+    auto* grRatio = CreateRatioPlot(signalHistOriginal, stack, setting);
     if (grRatio) {
         // X-axis settings to align with the main plot
         grRatio->GetXaxis()->SetLimits(xAxisRange_low, xAxisRange_high); // Same x-axis range
@@ -372,11 +391,14 @@ void Iteration_Directories_And_Histograms(const unordered_map<string, ProcessInf
 
 int Ploter_Norm() {
     unordered_map<string, ProcessInfo> processes = {
-        {"TTZH", {"TTZH.root", false, kBlue, "TTZH"}},
+          {"TT_DL", {"TTHTobb.root", false, kMagenta, "TTH"}},
+         {"TT4b", {"TT4b.root", false, kGreen, "TT4b"}},
+         {"TTZH", {"TTZH.root", false, kBlue, "TTZH"}},
         {"TTZZ", {"TTZZ.root", false, kRed, "TTZZ"}},
         {"ttHH", {"ttHH.root", true, kBlack, "ttHH"}},
         // Add other processes as needed
     };
+
 
     unordered_map<string, vector<HistogramSetting>> histogramSettings = {
         {"Lepton", 

@@ -1,4 +1,3 @@
-// plot with mean values
 #include <TFile.h>
 #include <TH1.h>
 #include <THStack.h>
@@ -62,7 +61,7 @@ void setLatexSetting(TLatex& histoLatex, const string& histo_title) {
 
     histoLatex.SetTextSize(0.04);
     histoLatex.SetTextAlign(31); // Align to the right
-    histoLatex.DrawLatex(0.9, 0.945, "2023 year, 9.45 fb^{-1} [13.6 TeV]");
+    histoLatex.DrawLatex(0.9, 0.945, "2023 year, 18 fb^{-1} [13.6 TeV]");
 
     histoLatex.SetTextSize(0.04);
     histoLatex.SetTextAlign(11);
@@ -70,7 +69,7 @@ void setLatexSetting(TLatex& histoLatex, const string& histo_title) {
     histoLatex.DrawLatex(0.13, 0.92, title.c_str());
 }
 
-TGraphAsymmErrors* CreateRatioPlot(TH1* signal, THStack* background, const HistogramSetting& setting, double maxRatioLimit = 5) {
+TGraphAsymmErrors* CreateRatioPlot(TH1* signal, THStack* background, const HistogramSetting& setting, double maxRatioLimit = 0.01) {
     if (!signal || !background) {
         cerr << "Error: Signal or background is null while creating the ratio plot." << endl;
         return nullptr;
@@ -251,10 +250,11 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
     TLatex latex;
     setLatexSetting(latex, setting.title);
 
-    // Add process information to the right
-    double xText = 0.85; // Adjusted horizontal position of the text to the right
-    double yText = 0.85; // Initial vertical position of the text
-    double yStep = 0.04; // Reduced spacing between text lines
+    // Add colored squares with the color and name of each process in the top-right corner
+    double xText = 0.85; // Horizontal position of the text
+    double yText = 0.85; // Initial vertical position of the text (higher up)
+    double yStep = 0.05; // Spacing between text lines (increased to create more space)
+    double xStep = 0.15; // Horizontal spacing between processes in the same line
 
     for (const auto& histPair : histograms) {
         TH1* hist = histPair.first;
@@ -268,9 +268,17 @@ void DrawStackedHistograms(const vector<pair<TH1*, ProcessInfo>>& histograms, co
         meanStream << std::fixed << std::setprecision(2) << mean;
         stdDevStream << std::fixed << std::setprecision(2) << stdDev;
 
+        // Create a TPaveText for the colored square
+        double boxSize = 0.02; // Size of the square (height and width)
+        TPaveText* box = new TPaveText(xText - 0.04, yText - boxSize / 2, xText - 0.04+ boxSize, yText + boxSize / 2, "NDC");
+        box->SetFillColor(histPair.second.color); // Use the color defined in ProcessInfo
+        box->SetLineColor(kBlack); // Set the border color to black
+        box->SetBorderSize(1); // Border thickness
+        box->Draw();
+
         // First line: process name and mean value
         string info1 = histPair.second.legendName + ": #mu = " + meanStream.str();
-        latex.SetTextColor(histPair.second.color);
+        latex.SetTextColor(kBlack); // Text color is black for better readability
         latex.SetTextSize(0.025); // Reduced font size to 0.025
         latex.DrawLatex(xText, yText, info1.c_str());
         yText -= yStep; // Move to the next line
@@ -377,8 +385,8 @@ void Iteration_Directories_And_Histograms(const unordered_map<string, ProcessInf
 
 int Ploter2() {
     unordered_map<string, ProcessInfo> processes = {
-  //        {"TT_DL", {"TT_DL.root", false, kMagenta, "TT_DL"}},
-   //      {"TT4b", {"TT4b.root", false, kGreen, "TT4b"}},
+          {"TT_DL", {"TTHTobb.root", false, kMagenta, "TTH"}},
+         {"TT4b", {"TT4b.root", false, kGreen, "TT4b"}},
          {"TTZH", {"TTZH.root", false, kBlue, "TTZH"}},
         {"TTZZ", {"TTZZ.root", false, kRed, "TTZZ"}},
         {"ttHH", {"ttHH.root", true, kBlack, "ttHH"}},
