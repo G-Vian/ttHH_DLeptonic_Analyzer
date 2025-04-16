@@ -7,3 +7,7 @@ dasgoclient --query="file dataset=/TTZZTo4b_5f_LO_TuneCP5_13TeV_madgraph_pythia8
 dasgoclient --query="file dataset=/TTTo2L2Nu-noSC_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v2/NANOAODSIM" | sed 's|^|root://xrootd-cms.infn.it//|' >> filelist_TT_DL17.txt
 
 
+#how to use :
+#  chmod +x makeFileList.sh
+# voms-proxy-init --voms cms
+# ./makeFileList.sh
