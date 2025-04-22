@@ -1,3 +1,4 @@
+// Plots with mean value
 #include <TFile.h>
 #include <TH1.h>
 #include <THStack.h>
@@ -440,4 +441,4 @@ int Ploter2() {
     return 0;
 }
 
-// to run use root -l -b -q Ploter2.cpp
+// // to run use: cmssw-el7  cmsenv  root -l -b -q Ploter2.cpp
