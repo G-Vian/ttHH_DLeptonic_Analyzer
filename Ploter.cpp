@@ -1,4 +1,4 @@
-/// include <TFile.h>
+/// Original script of the plotter
 #include <TH1.h>
 #include <THStack.h>
 #include <TKey.h>
