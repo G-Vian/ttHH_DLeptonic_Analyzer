@@ -1,3 +1,4 @@
+//Normalized plots with mean values
 #include <TFile.h>
 #include <TH1.h>
 #include <THStack.h>
@@ -454,4 +455,5 @@ int Ploter_Norm() {
 }
 
 
-// to run use root -l -b -q Ploter_Norm.cpp
+//
+// to run use: cmssw-el7  cmsenv  root -l -b -q Ploter_Norm.cpp
